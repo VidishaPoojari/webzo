@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Planner</title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f3f4f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            background-color: #007BFF;
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+        }
+
+        header p {
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .task-input {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .task-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .task-input button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .task-input button:hover {
+            background-color: #218838;
+        }
+
+        .task-list {
+            margin-top: 20px;
+        }
+
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .task span {
+            flex: 1;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+
+        .task button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .delete-btn:hover {
+            background-color: #bd2130;
+        }
+
+        .edit-btn {
+            background-color: #007BFF;
+        }
+
+        .edit-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .clear-btn {
+            display: block;
+            width: 100%;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .clear-btn:hover {
+            background-color: #0056b3;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Daily Planner</h1>
+        <p id="current-date"></p>
+    </header>
+    <div class="container">
+        <div class="task-input">
+            <input type="text" id="task-input" placeholder="Enter your task..." />
+            <button id="add-task-btn">Add Task</button>
+        </div>
+        <div class="task-list" id="task-list"></div>
+        <button class="clear-btn" id="clear-planner">Clear All Tasks</button>
+    </div>
+    <footer>
+        <p>Made with ❤ by [Your Name]</p>
+    </footer>
+    <script>
+        // Display the current date
+        document.getElementById("current-date").textContent = new Date().toLocaleDateString();
+
+        const taskList = document.getElementById("task-list");
+        const taskInput = document.getElementById("task-input");
+
+        // Load tasks from local storage
+        function loadTasks() {
+            const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            savedTasks.forEach(taskText => addTaskToDOM(taskText));
+        }
+
+        // Save tasks to local storage
+        function saveTasks() {
+            const tasks = Array.from(taskList.children).map(task => task.querySelector("span").textContent);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+
+        // Add task to the DOM
+        function addTaskToDOM(taskText) {
+            const taskDiv = document.createElement("div");
+            taskDiv.classList.add("task");
+
+            const taskContent = document.createElement("span");
+            taskContent.textContent = taskText;
+
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.classList.add("edit-btn");
+            editBtn.addEventListener("click", () => {
+                const newText = prompt("Edit your task:", taskContent.textContent);
+                if (newText !== null && newText.trim() !== "") {
+                    taskContent.textContent = newText;
+                    saveTasks();
+                }
+            });
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.classList.add("delete-btn");
+            deleteBtn.addEventListener("click", () => {
+                taskList.removeChild(taskDiv);
+                saveTasks();
+            });
+
+            taskDiv.appendChild(taskContent);
+            taskDiv.appendChild(editBtn);
+            taskDiv.appendChild(deleteBtn);
+            taskList.appendChild(taskDiv);
+        }
+
+        // Add new task
+        document.getElementById("add-task-btn").addEventListener("click", () => {
+            const taskText = taskInput.value.trim();
+            if (!taskText) {
+                alert("Task cannot be empty!");
+                return;
+            }
+            addTaskToDOM(taskText);
+            saveTasks();
+            taskInput.value = "";
+        });
+
+        // Clear all tasks
+        document.getElementById("clear-planner").addEventListener("click", () => {
+            if (confirm("Are you sure you want to clear all tasks?")) {
+                taskList.innerHTML = "";
+                localStorage.removeItem("tasks");
+            }
+        });
+
+        // Load tasks on page load
+        document.addEventListener("DOMContentLoaded", loadTasks);
+    </script>
+</body>
+</html>
